@@ -34,6 +34,7 @@ import UIKit
 class AlbumView: UIView {
   
   private var coverImageView: UIImageView!
+  private var valueObservation: NSKeyValueObservation!
   private var indicatorView: UIActivityIndicatorView!
   
   required init?(coder aDecoder: NSCoder) {
@@ -44,6 +45,7 @@ class AlbumView: UIView {
   init(frame: CGRect, coverUrl: String) {
     super.init(frame: frame)
     commonInit()
+    NotificationCenter.default.post(name: .BLDownloadImage, object: self, userInfo: ["imageView": coverImageView, "coverUrl" : coverUrl])
   }
   
   private func commonInit() {
@@ -52,6 +54,12 @@ class AlbumView: UIView {
     // Create the cover image view
     coverImageView = UIImageView()
     coverImageView.translatesAutoresizingMaskIntoConstraints = false
+    
+    valueObservation = coverImageView.observe(\.image, options: [.new]) { [unowned self] observed, change in
+      if change.newValue is UIImage {
+        self.indicatorView.stopAnimating()
+      }
+    }
     addSubview(coverImageView)
     // Create the indicator view
     indicatorView = UIActivityIndicatorView()
